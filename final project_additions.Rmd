@@ -1,11 +1,4 @@
----
-title: "ANLY 500 Final project"
-author: "Group 5"
-date: "2023-12-02"
-output:
-  html_document:
-    df_print: paged
----
+
 # General information on the data set
 ```{r}
 sleep <- read.csv("/users/nancyuwera/downloads/Sleep_health_and_lifestyle_dataset.csv")
