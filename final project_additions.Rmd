@@ -1,0 +1,286 @@
+---
+title: "ANLY 500 Final project"
+author: "Group 5"
+date: "2023-12-02"
+output:
+  html_document:
+    df_print: paged
+---
+# General information on the data set
+```{r}
+sleep <- read.csv("/users/nancyuwera/downloads/Sleep_health_and_lifestyle_dataset.csv")
+```
+```{r}
+str(sleep)
+```
+
+```{r}
+summary(sleep)
+```
+# check for inconsistencies 
+```{r}
+unique(sleep$Gender)
+unique(sleep$BMI.Category)
+unique(sleep$Occupation)
+unique(sleep$Sleep.Disorder)
+```
+# check for missing values
+```{r}
+colSums(is.na(sleep))
+```
+# checking for outliers
+```{r}
+numv <- sleep [, sapply(sleep, is.numeric)]
+par(mfrow=c(2, 5))  
+for (col in colnames(numv)) {
+  boxplot(numv[[col]], main=col, col="skyblue", border="black")
+}
+```
+```{r}
+par(mfrow=c(3,3))  
+for (col in colnames(numv)) {
+  qqnorm(numv[[col]], main=col, col="skyblue", pch=19)
+  qqline(numv[[col]], col="black", lty=2)
+}
+```
+```{r}
+# List of numerical variable names
+numv <- c("Age", "Sleep.Duration", "Quality.of.Sleep", 
+                          "Physical.Activity.Level", "Stress.Level", 
+                          "Heart.Rate", "Daily.Steps")
+
+par(mfrow = c(2, 4), mar = c(4, 4, 2, 1))
+
+# Create histograms for each numerical variable
+for (variable in numv) {
+  hist(sleep[[variable]], main = variable, xlab = variable, col = "skyblue", border = "black")
+}
+
+par(mfrow = c(1, 1))
+
+```
+```{r}
+# multiple Histograms
+pairs(sleep[, c("Age", "Sleep.Duration", "Quality.of.Sleep", "Physical.Activity.Level", "Stress.Level", "Heart.Rate", "Daily.Steps")])
+```
+```{r}
+# correlation between all numerical variables
+cor(sleep[, c("Age", "Sleep.Duration", "Quality.of.Sleep", "Physical.Activity.Level", "Stress.Level", "Heart.Rate", "Daily.Steps")])
+```
+
+
+```{r}
+# Relationship between Sleep Duration and Sleep Quality
+cor(sleep$Sleep.Duration, sleep$Quality.of.Sleep)
+```
+```{r}
+# Relationship between Physical Activity and Sleep Duration
+cor(sleep$Daily.Steps, sleep$Sleep.Duration)
+```
+```{r}
+# Relationship between Stress Level and Sleep Quality
+cor(sleep$Stress.Level, sleep$Quality.of.Sleep)
+```
+
+```{r}
+
+library(ggplot2)
+
+# Scatter plot for females
+ggplot(subset(sleep, Gender == "Female"), aes(x = Age, y = Sleep.Duration)) +
+  geom_point(color = "coral") +
+  labs(title = "Scatter Plot for Females: Age vs Sleep Duration",
+       x = "Age", y = "Sleep Duration")
+```
+```{r}
+# Scatter plot for males
+ggplot(subset(sleep, Gender == "Male"), aes(x = Age, y = Sleep.Duration)) +
+  geom_point(color = "blue") +
+  labs(title = "Scatter Plot for Males: Age vs Sleep Duration",
+       x = "Age", y = "Sleep Duration")
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(sleep, aes(x = BMI.Category, y = Sleep.Duration)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Sleep Duration across BMI Categories")
+```
+```{r}
+# Explore relationships with occupation
+ggplot(sleep, aes(x = Occupation, y = Stress.Level)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Average Stress Level by Occupation")
+```
+```{r}
+plot(sleep$Sleep.Duration, sleep$Quality.of.Sleep)
+```
+```{r}
+boxplot(sleep$Quality.of.Sleep ~ sleep$Physical.Activity.Level)
+```
+```{r}
+correlation_matrix <- cor(sleep[, c("Sleep.Duration", "Quality.of.Sleep", "Physical.Activity.Level", "Stress.Level", "Daily.Steps")])
+heatmap(correlation_matrix)
+```
+```{r}
+# Load the necessary library
+library(dplyr)
+
+
+
+# Recode Sleep.Disorder into a binary variable
+sleepdisorderbinary <- sleep %>%
+  mutate(Sleep_Disorder_Binary = ifelse(Sleep.Disorder %in% c("insomnia", "sleep apnea"), 1, 0))
+
+
+head(sleep)
+
+```
+
+
+```{r}
+#BMI Category
+ggplot(sleep, aes(x = BMI.Category, fill = Sleep.Disorder)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Distribution of Sleep Disorders across BMI Categories",
+       x = "BMI Category",
+       y = "Count of Sleep Disorders") +
+  theme_minimal()
+
+```
+```{r}
+ggplot(sleep, aes(x = Physical.Activity.Level, fill = Sleep.Disorder)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Distribution of Sleep Disorders with physical activity level",
+       x = "Count of Physical activity level",
+       y = "Count of Sleep Disorders") +
+  theme_minimal()
+
+
+
+```
+
+```{r}
+ggplot(sleep, aes(x = Stress.Level, fill = Sleep.Disorder)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Influence of Stress Level on Sleep Disorders",
+       x = "Stress Level",
+       y = "Count of Sleep Disorders") +
+  theme_minimal()
+```
+```{r}
+ggplot(sleep, aes(x = Quality.of.Sleep, fill = Sleep.Disorder)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Relationship between Quality of Sleep and Sleep Disorders",
+       x = "Quality of Sleep",
+       y = "Count of Sleep Disorders") +
+  theme_minimal()
+```
+```{r}
+ggplot(sleep, aes(x = Daily.Steps, fill = Sleep.Disorder)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Association of Daily Steps with Sleep Disorders",
+       x = "Daily Steps",
+       y = "Count of Sleep Disorders") +
+  theme_minimal()
+```
+```{r}
+library(dplyr)
+sleep <- sleep %>%
+  mutate(Sleep_Disorder_Binary = ifelse(Sleep.Disorder %in% c("insomnia", "sleep apnea"), 1, 0))
+head(sleep)
+```
+
+```{r}
+logistic_model <- glm(Sleep_Disorder_Binary ~ Age + Physical.Activity.Level + Stress.Level +
+                        BMI.Category + Quality.of.Sleep + Daily.Steps,
+                      data = sleep,
+                      family = "binomial")
+summary(logistic_model)
+```
+```{r}
+# Create a new BMI category without "Normal Weight"
+sleep$BMI_Category_New <- ifelse(sleep$BMI.Category %in% c("Overweight", "Obese"), "Overweight/Obese", "Normal Weight")
+
+# Run the logistic regression model with the updated BMI category
+model2 <- glm(formula = Sleep_Disorder_Binary ~ Physical.Activity.Level + 
+                BMI_Category_New , 
+             family = "binomial", data = sleep)
+
+# Display the model summary
+summary(model2)
+
+```
+```{r}
+
+# Encode gender as binary (1 for Female, 0 for Male)
+sleep$Gender_Binary <- ifelse(sleep$Gender == "Female", 1, 0)
+
+# Logistic regression model
+model3 <-glm(formula = Sleep_Disorder_Binary ~ Age + Physical.Activity.Level + 
+    Stress.Level + BMI.Category + Quality.of.Sleep + Daily.Steps + 
+    Gender_Binary, family = "binomial", data = sleep)
+# Display the model summary
+summary(model3)
+
+```
+```{r}
+model4 <-glm(formula = Sleep_Disorder_Binary ~ Physical.Activity.Level + Daily.Steps +
+      
+    Gender_Binary, family = "binomial", data = sleep)
+summary(model4)
+```
+
+
+```{r}
+lm_age=lm(Sleep.Duration ~ Age,data=sleep)
+summary(lm_age)
+plot(lm_age)
+```
+```{r}
+lm_daily_steps=lm(Sleep.Duration ~ Age,data=sleep)
+plot(lm_daily_steps)
+summary(lm_daily_steps)
+```
+
+```{r}
+lm_stress_level=lm(Sleep.Duration ~ Stress.Level,data=sleep)
+plot(lm_stress_level)
+summary(lm_stress_level)
+```
+
+```{r}
+# Linear Regression Model
+linearmodel <- lm(Sleep.Duration ~ Age + Daily.Steps + Stress.Level + Physical.Activity.Level, data = sleep)
+plot(linearmodel)
+summary(linearmodel)
+```
+```{r}
+linearmodel1 <-lm(formula = Sleep.Duration ~ Daily.Steps + Stress.Level, 
+    data = sleep)
+summary(linearmodel1)
+```
+
+```{r}
+##Sample the dataset. The return for this is row nos.
+set.seed(1)
+row.number <- sample(1:nrow(sleep), 0.8*nrow(sleep))
+train = sleep[row.number,]
+test = sleep[-row.number,]
+dim(train)
+dim(test)
+```
+
+```{r}
+pred=predict(linearmodel,newdata=test)
+rmse=sqrt(sum((exp(pred) - test$Sleep.Duration)^2)/length(test$Sleep.Duration))
+print(rmse)
+```
+```{r}
+pred=predict(linearmodel1,newdata=test)
+rmse=sqrt(sum((exp(pred) - test$Sleep.Duration)^2)/length(test$Sleep.Duration))
+print(rmse)
+```
+
